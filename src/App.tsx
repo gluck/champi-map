@@ -16,6 +16,7 @@ firebase.initializeApp(secrets)
 let { GeoPoint, Timestamp } = firebase.firestore
 
 let db = firebase.firestore()
+let icon = L.divIcon({className: 'fas fa-times item-icon', iconSize: [20,20]})
 
 interface Props {
 }
@@ -59,20 +60,18 @@ export default class App extends Component<Props, State> {
               console.log(change.doc.data())
               let {latlng, accuracy, notes, type, count} = change.doc.data()
               this.mapItems.set(change.doc.id, {
-                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}).addTo(this.map!).bindPopup(`${type} (${count}): ${notes}`),
+                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(`${type} (${count}): ${notes}`),
                 circle: L.circle({lat: latlng.latitude, lng: latlng.longitude}, accuracy/2).addTo(this.map!)
               })
-            }
-            if (change.type === "modified") {
+            } else if (change.type === "modified") {
               let {latlng, accuracy, notes, type, count} = change.doc.data()
               this.mapItems.get(change.doc.id)!.marker.remove()
               this.mapItems.get(change.doc.id)!.circle.remove()
               this.mapItems.set(change.doc.id, {
-                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}).addTo(this.map!).bindPopup(`${type} (${count}): ${notes}`),
+                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(`${type} (${count}): ${notes}`),
                 circle: L.circle({lat: latlng.latitude, lng: latlng.longitude}, accuracy/2).addTo(this.map!)
               })
-            }
-            if (change.type === "removed") {
+            } else if (change.type === "removed") {
               this.mapItems.get(change.doc.id)!.marker.remove()
               this.mapItems.get(change.doc.id)!.circle.remove()
               this.mapItems.delete(change.doc.id)
@@ -97,10 +96,18 @@ export default class App extends Component<Props, State> {
       let last = e as L.LocationEvent
       this.setState({last})
       var radius = last.accuracy / 2;
-      if (m) m.remove()
-      m = L.marker(last.latlng, {icon: L.divIcon({className: 'fas fa-times champ-icon'})}).addTo(this.map!).bindPopup(radius + " <b>meters</b>").openPopup();
-      if (c) c.remove()
-      c = L.circle(last.latlng, radius).addTo(this.map!);
+      if (m === undefined) {
+        m = L.marker(last.latlng, {icon}).addTo(this.map!)
+      } else {
+        m.setLatLng(last.latlng)
+      }
+      m.bindPopup(radius + " <b>meters</b>").openPopup()
+      if (c == undefined) {
+        c = L.circle(last.latlng, radius).addTo(this.map!)
+      } else {
+        c.setLatLng(last.latlng)
+        c.setRadius(radius)
+      }
     });
     this.map.on('locationerror', console.error);
     this.map.locate({watch: true, setView: true, enableHighAccuracy: true})
