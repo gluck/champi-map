@@ -3,20 +3,9 @@
   "name": "Champi Map",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-			"src": "svelte-logo-192.png",
-			"sizes": "192x192",
-			"type": "image/png"
-		},
-		{
-			"src": "svelte-logo-512.png",
-			"sizes": "512x512",
-			"type": "image/png"
-		}
+      "src": "Tango_Style_Mushroom_icon.svg",
+      "sizes": "512x512 192x192 64x64 32x32 24x24 16x16",
+    }
   ],
   "start_url": ".",
   "display": "standalone",
