@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^3.9.3",
     "@types/jest": "24.0.11",
+    "@types/leaflet": "^1.4.3",
     "@types/node": "11.13.0",
     "@types/react": "16.8.12",
     "@types/react-dom": "16.8.3",
+    "@types/react-leaflet": "^2.2.1",
+    "firebase": "^5.9.3",
+    "leaflet": "^1.4.0",
+    "leaflet-easybutton": "^2.4.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-geolocated": "^2.4.1",
+    "react-leaflet": "^2.2.1",
     "react-scripts": "2.1.8",
     "typescript": "3.4.1"
   },
@@ -26,5 +34,10 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "jest": {
+    "modulePathIgnorePatterns": [
+      "node_modules"
+    ]
+  }
 }
