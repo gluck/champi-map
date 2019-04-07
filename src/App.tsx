@@ -12,13 +12,23 @@ import Login from './Login'
 import EditItem from './EditItem'
 import Item from './Item';
 
+import htm from 'htm';
+import hyperscript from 'hyperscript'
+
+
+const html : any = htm.bind(hyperscript)
+
+
 firebase.initializeApp(secrets)
 let { GeoPoint, Timestamp } = firebase.firestore
 
 let db = firebase.firestore()
-//db.enablePersistence().catch(err => alert(err.code));
-db.enablePersistence().catch(console.error);
 let icon = L.divIcon({className: 'fas fa-times item-icon', iconSize: [20,20]})
+
+db.enablePersistence().catch(err => {
+  console.error(err)
+});
+let items = db.collection("champignons")
 
 interface Props {
 }
@@ -35,6 +45,7 @@ interface State {
     accuracy: number;
   },
   newItem: boolean;
+  editItem: Item & {id: string} | undefined;
 }
 
 
@@ -52,31 +63,38 @@ export default class App extends Component<Props, State> {
         accuracy: 5
       },
       hasLocation: false,
-      newItem: false
+      newItem: false,
+      editItem: undefined
     }
+
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        db.collection("champignons").where("userid", "==", user.uid).onSnapshot(snapshot => {
+        items.where("userid", "==", user.uid).onSnapshot(snapshot => {
           snapshot.docChanges().forEach(change => {
-            if (change.type === "added") {
-              console.log(change.doc.data())
-              let {latlng, accuracy, notes, type, count} = change.doc.data()
-              this.mapItems.set(change.doc.id, {
-                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(`${type} (${count}): ${notes}`),
-                circle: L.circle({lat: latlng.latitude, lng: latlng.longitude}, accuracy/2).addTo(this.map!)
-              })
-            } else if (change.type === "modified") {
-              let {latlng, accuracy, notes, type, count} = change.doc.data()
-              this.mapItems.get(change.doc.id)!.marker.remove()
-              this.mapItems.get(change.doc.id)!.circle.remove()
-              this.mapItems.set(change.doc.id, {
-                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(`${type} (${count}): ${notes}`),
-                circle: L.circle({lat: latlng.latitude, lng: latlng.longitude}, accuracy/2).addTo(this.map!)
-              })
-            } else if (change.type === "removed") {
+            let remove = () => {
               this.mapItems.get(change.doc.id)!.marker.remove()
               this.mapItems.get(change.doc.id)!.circle.remove()
               this.mapItems.delete(change.doc.id)
+            }
+            let create = () => {
+              let {latlng, accuracy, notes, type, count} = change.doc.data()
+              let popup = html`<div>${type} (${count}): ${notes}<br/>
+                <div className="fas fa-edit tool-icon" onclick=${() => this.setState({editItem: {id: change.doc.id, type, notes, count}})}/>
+                <div className="fas fa-times tool-icon" onclick=${() => items.doc(change.doc.id).delete()}/>
+              </div>`
+              this.mapItems.set(change.doc.id, {
+                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(popup),
+                circle: L.circle({lat: latlng.latitude, lng: latlng.longitude}, accuracy/2).addTo(this.map!)
+              })
+            }
+
+            if (change.type === "added") {
+              create()
+            } else if (change.type === "modified") {
+              remove()
+              create()
+            } else if (change.type === "removed") {
+              remove()
             }
           });
         });
@@ -90,11 +108,11 @@ export default class App extends Component<Props, State> {
 
   componentDidMount() {
 
-    let googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+    let googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
       maxZoom: 20,
       subdomains:['mt0','mt1','mt2','mt3']
     });
-    let googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+    let googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
       maxZoom: 20,
       subdomains:['mt0','mt1','mt2','mt3']
     });
@@ -131,7 +149,7 @@ export default class App extends Component<Props, State> {
 
     L.control.layers({googleHybrid, googleSat, GeoportailFrance_orthos}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
 
-    let m : L.Marker,c : L.Circle
+    let m : L.Marker | undefined,c : L.Circle | undefined
     this.map.on('locationfound', ( e : L.LeafletEvent) => {
       let last = e as L.LocationEvent
       this.setState({last})
@@ -150,23 +168,33 @@ export default class App extends Component<Props, State> {
       }
     });
     this.map.on('locationerror', console.error);
+    let locate = true
     this.map.locate({watch: true, setView: true, enableHighAccuracy: true})
-    //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(this.map);
 
-
-
-    L.easyButton('fas fa-user', (btn, map) => {
+    L.easyButton('fas fa-user', () => {
       this.setState({login: true})
     }).addTo(this.map);
 
-    L.easyButton('fas fa-plus', (btn, map) => {
+    L.easyButton('fas fa-plus', () => {
       this.setState({newItem: true})
+    }).addTo(this.map);
+
+    L.easyButton('fas fa-crosshairs', () => {
+      if (locate) {
+        locate = false
+        this.map!.stopLocate()
+        if (m) {m.remove();m = undefined;}
+        if (c) {c.remove();c = undefined;}
+      } else {
+        locate = true
+        this.map!.locate({watch: true, setView: true, enableHighAccuracy: true})
+      }
     }).addTo(this.map);
   }
 
   handleNewItem(last: any, item: Item) {
     this.setState({newItem: false});
-    db.collection("champignons").add({
+    items.add({
       userid: firebase.auth().currentUser!.uid,
       type: item.type,
       count: item.count,
@@ -177,6 +205,14 @@ export default class App extends Component<Props, State> {
     })
   }
 
+  handleEditItem(id: string, item: Item) {
+    this.setState({editItem: undefined});
+    items.doc(id).set({
+      type: item.type,
+      count: item.count,
+      notes: item.notes
+    }, { merge: true })
+  }
 
   handleLogin(email: string | undefined, password: string | undefined) {
     this.setState({login: false});
@@ -193,7 +229,8 @@ export default class App extends Component<Props, State> {
   render() {
     let login = this.state.login ? (<Login confirm={this.handleLogin.bind(this)} />) : null
     let newItem = this.state.newItem ? (<EditItem item={{count: 1, type: 'cepe', notes: ''}} cancel={() => this.setState({newItem: false})} confirm={this.handleNewItem.bind(this, this.state.last)} />) : null
-    return (<div>{login}{newItem}<div ref={this.mapRef} id="mapid" style={{ height: '100vh',
+    let editItem = this.state.editItem ? (<EditItem item={this.state.editItem} cancel={() => this.setState({editItem: undefined})} confirm={this.handleEditItem.bind(this, this.state.editItem.id)} />) : null
+    return (<div>{login}{newItem}{editItem}<div ref={this.mapRef} id="mapid" style={{ height: '100vh',
       width: '100vw'}}></div></div>)
   }
 }
