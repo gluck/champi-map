@@ -171,6 +171,10 @@ export default class App extends Component<Props, State> {
     let locate = true
     this.map.locate({watch: true, setView: true, enableHighAccuracy: true})
 
+    this.map.on('click', (e : any) => {
+      this.setState({last: {latlng: e.latlng, accuracy: 2}, newItem: true})
+    })
+
     L.easyButton('fas fa-user', () => {
       this.setState({login: true})
     }).addTo(this.map);
