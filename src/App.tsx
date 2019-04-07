@@ -16,6 +16,8 @@ firebase.initializeApp(secrets)
 let { GeoPoint, Timestamp } = firebase.firestore
 
 let db = firebase.firestore()
+//db.enablePersistence().catch(err => alert(err.code));
+db.enablePersistence().catch(console.error);
 let icon = L.divIcon({className: 'fas fa-times item-icon', iconSize: [20,20]})
 
 interface Props {
@@ -88,8 +90,46 @@ export default class App extends Component<Props, State> {
 
   componentDidMount() {
 
+    let googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+      maxZoom: 20,
+      subdomains:['mt0','mt1','mt2','mt3']
+    });
+    let googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+      maxZoom: 20,
+      subdomains:['mt0','mt1','mt2','mt3']
+    });
+    let GeoportailFrance_orthos = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+      bounds: [[-75, -180], [81, 180]],
+      minZoom: 2,
+      maxZoom: 19,
+      apikey: 'choisirgeoportail',
+      format: 'image/jpeg',
+      style: 'normal'
+    } as any);
+    let GeoportailFrance_parcels = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=CADASTRALPARCELS.PARCELS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+      bounds: [[-75, -180], [81, 180]],
+      minZoom: 2,
+      maxZoom: 20,
+      apikey: 'choisirgeoportail',
+      format: 'image/png',
+      style: 'bdparcellaire'
+    } as any);
+    let GeoportailFrance_ignMaps = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+      attribution: '<a target="_blank" href="https://www.geoportail.gouv.fr/">Geoportail France</a>',
+      bounds: [[-75, -180], [81, 180]],
+      minZoom: 2,
+      maxZoom: 18,
+      apikey: 'choisirgeoportail',
+      format: 'image/jpeg',
+      style: 'normal',
+      opacity: 0.5
+    } as any);
+
     this.map = new L.Map(this.mapRef.current as HTMLElement, {
+      layers: [googleHybrid]
     })
+
+    L.control.layers({googleHybrid, googleSat, GeoportailFrance_orthos}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
 
     let m : L.Marker,c : L.Circle
     this.map.on('locationfound', ( e : L.LeafletEvent) => {
@@ -111,7 +151,9 @@ export default class App extends Component<Props, State> {
     });
     this.map.on('locationerror', console.error);
     this.map.locate({watch: true, setView: true, enableHighAccuracy: true})
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(this.map);
+    //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(this.map);
+
+
 
     L.easyButton('fas fa-user', (btn, map) => {
       this.setState({login: true})
