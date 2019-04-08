@@ -5,30 +5,23 @@ import L from "leaflet";
 import 'leaflet-easybutton/src/easy-button.css'
 import 'leaflet-easybutton'
 import secrets from './secrets'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/firestore'
 import Login from './Login'
 import EditItem from './EditItem'
 import Item from './Item';
+import { firestore } from 'firebase';
 
-import htm from 'htm';
-import hyperscript from 'hyperscript'
+const html$ = import('htm').then(({default: htm}) => import('hyperscript').then(({default: hyperscript}) => htm.bind(hyperscript)))
+const firebase$ = import('firebase/app').then(({default: firebase}) => {
+  firebase.initializeApp(secrets)
+  return Promise.all([import('firebase/auth'), import('firebase/firestore')]).then(() => firebase)
+})
+const auth$ = firebase$.then(f => f.auth())
+const firestore$ = firebase$.then(f => f.firestore()).then(firestore => firestore.enablePersistence().then(() => firestore))
+const items$ = firestore$.then(firestore => firestore.collection("champignons"))
 
+//let { GeoPoint, Timestamp } = firebase.firestore
 
-const html : any = htm.bind(hyperscript)
-
-
-firebase.initializeApp(secrets)
-let { GeoPoint, Timestamp } = firebase.firestore
-
-let db = firebase.firestore()
 let icon = L.divIcon({className: 'fas fa-times item-icon', iconSize: [20,20]})
-
-db.enablePersistence().catch(err => {
-  console.error(err)
-});
-let items = db.collection("champignons")
 
 interface Props {
 }
@@ -46,6 +39,7 @@ interface State {
   },
   newItem: boolean;
   editItem: Item & {id: string} | undefined;
+  userid: string | undefined;
 }
 
 
@@ -64,12 +58,16 @@ export default class App extends Component<Props, State> {
       },
       hasLocation: false,
       newItem: false,
-      editItem: undefined
+      editItem: undefined,
+      userid: undefined
     }
 
-    firebase.auth().onAuthStateChanged(user => {
+    auth$.then(auth => auth.onAuthStateChanged(async user => {
       if (user) {
-        items.where("userid", "==", user.uid).onSnapshot(snapshot => {
+        this.setState({userid: user.uid})
+        let items = await items$
+        items.where("userid", "==", user.uid).onSnapshot(async snapshot => {
+          let html = await html$
           snapshot.docChanges().forEach(change => {
             let remove = () => {
               this.mapItems.get(change.doc.id)!.marker.remove()
@@ -100,6 +98,7 @@ export default class App extends Component<Props, State> {
         });
         }
     })
+    )
   }
 
   mapItems = new Map<string, { marker: L.Marker, circle: L.Circle}>()
@@ -133,7 +132,6 @@ export default class App extends Component<Props, State> {
       style: 'bdparcellaire'
     } as any);
     let GeoportailFrance_ignMaps = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
-      attribution: '<a target="_blank" href="https://www.geoportail.gouv.fr/">Geoportail France</a>',
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
       maxZoom: 18,
@@ -196,10 +194,11 @@ export default class App extends Component<Props, State> {
     }).addTo(this.map);
   }
 
-  handleNewItem(last: any, item: Item) {
+  async handleNewItem(last: any, item: Item) {
     this.setState({newItem: false});
-    items.add({
-      userid: firebase.auth().currentUser!.uid,
+    let { GeoPoint, Timestamp } = (await firebase$).firestore;
+    (await items$).add({
+      userid: this.state.userid,
       type: item.type,
       count: item.count,
       latlng: new GeoPoint(last.latlng.lat, last.latlng.lng),
@@ -209,21 +208,22 @@ export default class App extends Component<Props, State> {
     })
   }
 
-  handleEditItem(id: string, item: Item) {
+  async handleEditItem(id: string, item: Item) {
     this.setState({editItem: undefined});
-    items.doc(id).set({
+    (await items$).doc(id).set({
       type: item.type,
       count: item.count,
       notes: item.notes
     }, { merge: true })
   }
 
-  handleLogin(email: string | undefined, password: string | undefined) {
+  async handleLogin(email: string | undefined, password: string | undefined) {
     this.setState({login: false});
     if (email === undefined || password === undefined) return;
-    firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+    let auth = await auth$
+    auth.signInWithEmailAndPassword(email, password).catch(function(error) {
       if (error.code === 'auth/user-not-found') {
-        firebase.auth().createUserWithEmailAndPassword(email, password).catch(console.error);
+        auth.createUserWithEmailAndPassword(email, password).catch(console.error);
       } else {
         console.error(error)
       }

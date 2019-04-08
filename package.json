@@ -20,9 +20,11 @@
     "react-geolocated": "^2.4.1",
     "react-leaflet": "^2.2.1",
     "react-scripts": "2.1.8",
+    "source-map-explorer": "^1.8.0",
     "typescript": "3.4.1"
   },
   "scripts": {
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
