@@ -25,7 +25,8 @@ export default class FormDialog extends React.Component<Props, State> {
     this.props.confirm(undefined, undefined)
   };
 
-  handleConfirm = () => {
+  handleConfirm = (e: any) => {
+    e.preventDefault()
     this.props.confirm(this.state.email, this.state.password)
   };
 
@@ -37,41 +38,39 @@ export default class FormDialog extends React.Component<Props, State> {
           onClose={this.handleClose}
           aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              To subscribe to this website, please enter your email address here. We will send
-              updates occasionally.
-            </DialogContentText>
-            <form>
+          <form>
+            <DialogTitle id="form-dialog-title">Login</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Enter an email/password to store items online
+              </DialogContentText>
               <TextField
                 autoFocus
                 margin="dense"
-                id="name"
+                id="email"
                 label="Email Address"
                 type="email"
                 onChange={e => this.setState({email: e.target.value})}
                 fullWidth
               />
               <TextField
-                autoFocus
                 margin="dense"
-                id="pwd"
+                id="password"
                 label="Password"
                 type="password"
                 onChange={e => this.setState({password: e.target.value})}
                 fullWidth
               />
-            </form>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleClose} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleConfirm} color="primary">
-              Subscribe
-            </Button>
-          </DialogActions>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleClose} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleConfirm} color="primary" type="submit">
+                Login
+              </Button>
+            </DialogActions>
+          </form>
         </Dialog>
       </div>
     );

@@ -4,7 +4,6 @@ import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Item from './Item'
 import Select from '@material-ui/core/Select';
@@ -15,6 +14,7 @@ interface Props {
   item: Item;
   cancel: () => void;
   confirm: (item: Item) => void;
+  edit: boolean;
 }
 
 interface State {
@@ -31,7 +31,8 @@ export default class FormDialog extends React.Component<Props, State> {
     this.props.cancel()
   };
 
-  handleConfirm = () => {
+  handleConfirm = (e : any) => {
+    e.preventDefault()
     this.props.confirm(this.state.item)
   };
 
@@ -43,15 +44,12 @@ export default class FormDialog extends React.Component<Props, State> {
           onClose={this.handleClose}
           aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              To subscribe to this website, please enter your email address here. We will send
-              updates occasionally.
-            </DialogContentText>
-            <form>
+          <form>
+            <DialogTitle id="form-dialog-title">{this.props.edit ? 'Edit item' : 'Create item' }</DialogTitle>
+            <DialogContent>
   
               <Select
+                    autoFocus
                     value={this.state.item.count}
                     onChange={e => this.setState({item: {...this.state.item, count: parseInt(e.target.value)}})}
                   >
@@ -72,10 +70,11 @@ export default class FormDialog extends React.Component<Props, State> {
                   >
                     <MenuItem value='cepe'>Cepe</MenuItem>
                     <MenuItem value='trompette'>Trompette</MenuItem>
+                    <MenuItem value='girolle'>Girolle</MenuItem>
+                    <MenuItem value='pied-de-mouton'>Pied de mouton</MenuItem>
               </Select>
   
               <TextField
-                autoFocus
                 margin="dense"
                 id="notes"
                 label="Notes"
@@ -83,16 +82,16 @@ export default class FormDialog extends React.Component<Props, State> {
                 onChange={e => this.setState({item: {...this.state.item, notes: e.target.value}})}
                 fullWidth
               />
-            </form>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleClose} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleConfirm} color="primary">
-              Subscribe
-            </Button>
-          </DialogActions>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleClose} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleConfirm} color="primary" type="submit" >
+                {this.props.edit ? 'Edit' : 'Create'}
+              </Button>
+            </DialogActions>
+          </form>
         </Dialog>
       </div>
     );

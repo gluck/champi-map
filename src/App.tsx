@@ -112,6 +112,10 @@ export default class App extends Component<Props, State> {
       maxZoom: 20,
       subdomains:['mt0','mt1','mt2','mt3']
     });
+    let googleMap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+      maxZoom: 20,
+      subdomains:['mt0','mt1','mt2','mt3']
+    });
     let GeoportailFrance_orthos = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
@@ -142,7 +146,7 @@ export default class App extends Component<Props, State> {
       layers: [googleHybrid]
     })
 
-    L.control.layers({googleHybrid, googleSat, GeoportailFrance_orthos}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
+    L.control.layers({googleHybrid, googleSat, googleMap, GeoportailFrance_orthos}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
 
     let m : L.Marker | undefined,c : L.Circle | undefined
     this.map.on('locationfound', ( e : L.LeafletEvent) => {
@@ -229,8 +233,8 @@ export default class App extends Component<Props, State> {
 
   render() {
     let login = this.state.login ? (<Login confirm={this.handleLogin.bind(this)} />) : null
-    let newItem = this.state.newItem ? (<EditItem item={{count: 1, type: 'cepe', notes: ''}} cancel={() => this.setState({newItem: false})} confirm={this.handleNewItem.bind(this, this.state.last)} />) : null
-    let editItem = this.state.editItem ? (<EditItem item={this.state.editItem} cancel={() => this.setState({editItem: undefined})} confirm={this.handleEditItem.bind(this, this.state.editItem.id)} />) : null
+    let newItem = this.state.newItem ? (<EditItem edit={false} item={{count: 1, type: 'cepe', notes: ''}} cancel={() => this.setState({newItem: false})} confirm={this.handleNewItem.bind(this, this.state.last)} />) : null
+    let editItem = this.state.editItem ? (<EditItem edit item={this.state.editItem} cancel={() => this.setState({editItem: undefined})} confirm={this.handleEditItem.bind(this, this.state.editItem.id)} />) : null
     return (<div>{login}{newItem}{editItem}<div ref={this.mapRef} id="mapid" style={{ height: '100vh',
       width: '100vw'}}></div></div>)
   }
