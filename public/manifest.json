@@ -3,12 +3,12 @@
   "name": "Champi Map",
   "icons": [
 		{
-			"src": "svelte-logo-192.png",
+			"src": "champi-192.png",
 			"sizes": "192x192",
 			"type": "image/png"
 		},
 		{
-			"src": "svelte-logo-512.png",
+			"src": "champi-512.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		}
