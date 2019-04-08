@@ -8,7 +8,6 @@ import secrets from './secrets'
 import Login from './Login'
 import EditItem from './EditItem'
 import Item from './Item';
-import { firestore } from 'firebase';
 
 const html$ = import('htm').then(({default: htm}) => import('hyperscript').then(({default: hyperscript}) => htm.bind(hyperscript)))
 const firebase$ = import('firebase/app').then(({default: firebase}) => {
@@ -16,10 +15,8 @@ const firebase$ = import('firebase/app').then(({default: firebase}) => {
   return Promise.all([import('firebase/auth'), import('firebase/firestore')]).then(() => firebase)
 })
 const auth$ = firebase$.then(f => f.auth())
-const firestore$ = firebase$.then(f => f.firestore()).then(firestore => firestore.enablePersistence().then(() => firestore))
+const firestore$ = firebase$.then(f => f.firestore()).then(firestore => firestore.enablePersistence({experimentalTabSynchronization: true}).then(() => firestore))
 const items$ = firestore$.then(firestore => firestore.collection("champignons"))
-
-//let { GeoPoint, Timestamp } = firebase.firestore
 
 let icon = L.divIcon({className: 'fas fa-times item-icon', iconSize: [20,20]})
 
