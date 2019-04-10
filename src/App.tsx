@@ -4,14 +4,14 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import 'leaflet-easybutton/src/easy-button.css'
 import 'leaflet-easybutton'
-import secrets from './secrets'
+import keys from './keys'
 import Login from './Login'
 import EditItem from './EditItem'
 import Item from './Item';
 
 const html$ = import('htm').then(({default: htm}) => import('hyperscript').then(({default: hyperscript}) => htm.bind(hyperscript)))
 const firebase$ = import('firebase/app').then(({default: firebase}) => {
-  firebase.initializeApp(secrets)
+  firebase.initializeApp(keys)
   return Promise.all([import('firebase/auth'), import('firebase/firestore')]).then(() => firebase)
 })
 const auth$ = firebase$.then(f => f.auth())
@@ -235,8 +235,12 @@ export default class App extends Component<Props, State> {
     let login = this.state.login ? (<Login confirm={this.handleLogin.bind(this)} />) : null
     let newItem = this.state.newItem ? (<EditItem edit={false} item={{count: 1, type: 'cepe', notes: ''}} cancel={() => this.setState({newItem: false})} confirm={this.handleNewItem.bind(this, this.state.last)} />) : null
     let editItem = this.state.editItem ? (<EditItem edit item={this.state.editItem} cancel={() => this.setState({editItem: undefined})} confirm={this.handleEditItem.bind(this, this.state.editItem.id)} />) : null
-    return (<div>{login}{newItem}{editItem}<div ref={this.mapRef} id="mapid" style={{ height: '100vh',
-      width: '100vw'}}></div></div>)
+    return (<div>
+      {login}
+      {newItem}
+      {editItem}
+      <div ref={this.mapRef} id="mapid" />
+    </div>)
   }
 }
 
