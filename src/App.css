@@ -17,3 +17,7 @@
   cursor: hand;
   cursor: pointer;
 }
+
+.icon-off {
+  color: grey;
+}

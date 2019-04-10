@@ -167,7 +167,6 @@ export default class App extends Component<Props, State> {
       }
     });
     this.map.on('locationerror', console.error);
-    let locate = true
     this.map.locate({watch: true, setView: true, enableHighAccuracy: true})
 
     this.map.on('click', (e : any) => {
@@ -182,16 +181,27 @@ export default class App extends Component<Props, State> {
       this.setState({newItem: true})
     }).addTo(this.map);
 
-    L.easyButton('fas fa-crosshairs', () => {
-      if (locate) {
-        locate = false
-        this.map!.stopLocate()
-        if (m) {m.remove();m = undefined;}
-        if (c) {c.remove();c = undefined;}
-      } else {
-        locate = true
-        this.map!.locate({watch: true, setView: true, enableHighAccuracy: true})
-      }
+
+    L.easyButton({
+      states: [{
+        stateName: 'disable-locate',
+        icon:      'fas fa-crosshairs',
+        title:     'Disable location',
+        onClick: btn => {
+          this.map!.stopLocate()
+          if (m) {m.remove();m = undefined;}
+          if (c) {c.remove();c = undefined;}
+          btn.state('enable-locate');
+        }
+      }, {
+        stateName: 'enable-locate',
+        icon:      'fas fa-crosshairs icon-off',
+        title:     'Enable location',
+        onClick: btn => {
+          this.map!.locate({watch: true, setView: true, enableHighAccuracy: true})
+          btn.state('disable-locate');
+        }
+      }]
     }).addTo(this.map);
   }
 
