@@ -120,6 +120,7 @@ export default class App extends Component<Props, State> {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
       maxZoom: 21,
+      maxNativeZoom: 19,
       apikey: 'choisirgeoportail',
       format: 'image/jpeg',
       style: 'normal'
@@ -145,7 +146,8 @@ export default class App extends Component<Props, State> {
     } as any);
 
     this.map = new L.Map(this.mapRef.current as HTMLElement, {
-      layers: [googleHybrid]
+      layers: [googleHybrid],
+      attributionControl: false
     })
 
     L.control.layers({googleHybrid, googleSat, googleMap, GeoportailFrance_orthos}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
