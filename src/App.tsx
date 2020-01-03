@@ -15,7 +15,7 @@ const firebase$ = import('firebase/app').then(({default: firebase}) => {
   return Promise.all([import('firebase/auth'), import('firebase/firestore')]).then(() => firebase)
 })
 const auth$ = firebase$.then(f => f.auth())
-const firestore$ = firebase$.then(f => f.firestore()).then(firestore => firestore.enablePersistence({experimentalTabSynchronization: true}).then(() => firestore))
+const firestore$ = firebase$.then(f => f.firestore()).then(firestore => firestore.enablePersistence({synchronizeTabs: true}).then(() => firestore))
 const items$ = firestore$.then(firestore => firestore.collection("champignons"))
 
 let icon = L.divIcon({className: 'fas fa-times item-icon', iconSize: [20,20]})
@@ -105,21 +105,21 @@ export default class App extends Component<Props, State> {
   componentDidMount() {
 
     let googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
-      maxZoom: 20,
+      maxZoom: 21,
       subdomains:['mt0','mt1','mt2','mt3']
     });
     let googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-      maxZoom: 20,
+      maxZoom: 21,
       subdomains:['mt0','mt1','mt2','mt3']
     });
     let googleMap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
-      maxZoom: 20,
+      maxZoom: 21,
       subdomains:['mt0','mt1','mt2','mt3']
     });
     let GeoportailFrance_orthos = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
-      maxZoom: 19,
+      maxZoom: 21,
       apikey: 'choisirgeoportail',
       format: 'image/jpeg',
       style: 'normal'
@@ -127,7 +127,8 @@ export default class App extends Component<Props, State> {
     let GeoportailFrance_parcels = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=CADASTRALPARCELS.PARCELS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
-      maxZoom: 20,
+      maxZoom: 21,
+      maxNativeZoom: 20,
       apikey: 'choisirgeoportail',
       format: 'image/png',
       style: 'bdparcellaire'
@@ -135,7 +136,8 @@ export default class App extends Component<Props, State> {
     let GeoportailFrance_ignMaps = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
-      maxZoom: 18,
+      maxZoom: 21,
+      maxNativeZoom: 18,
       apikey: 'choisirgeoportail',
       format: 'image/jpeg',
       style: 'normal',
