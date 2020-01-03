@@ -17,10 +17,6 @@ interface State {
 }
 
 export default class FormDialog extends React.Component<Props, State> {
-  constructor(props : Props) {
-    super(props)
-  }
-
   handleClose = () => {
     this.props.confirm(undefined, undefined)
   };

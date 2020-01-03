@@ -51,7 +51,7 @@ export default class FormDialog extends React.Component<Props, State> {
               <Select
                     autoFocus
                     value={this.state.item.count}
-                    onChange={e => this.setState({item: {...this.state.item, count: parseInt(e.target.value)}})}
+                    onChange={(e: any) => this.setState({item: {...this.state.item, count: parseInt(e.target.value)}})}
                   >
                     <MenuItem value={1}>1</MenuItem>
                     <MenuItem value={2}>2</MenuItem>
@@ -66,7 +66,7 @@ export default class FormDialog extends React.Component<Props, State> {
   
               <Select
                     value={this.state.item.type}
-                    onChange={e => this.setState({item: {...this.state.item, type: e.target.value}})}
+                    onChange={(e: any) => this.setState({item: {...this.state.item, type: e.target.value}})}
                   >
                     <MenuItem value='cepe'>Cepe</MenuItem>
                     <MenuItem value='trompette'>Trompette</MenuItem>

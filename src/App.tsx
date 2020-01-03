@@ -155,11 +155,12 @@ export default class App extends Component<Props, State> {
       var radius = last.accuracy / 2;
       if (m === undefined) {
         m = L.marker(last.latlng, {icon}).addTo(this.map!)
+        this.map!.setView(last.latlng, 42)
       } else {
         m.setLatLng(last.latlng)
       }
       m.bindPopup(radius + " <b>meters</b>").openPopup()
-      if (c == undefined) {
+      if (c === undefined) {
         c = L.circle(last.latlng, radius).addTo(this.map!)
       } else {
         c.setLatLng(last.latlng)
@@ -167,7 +168,7 @@ export default class App extends Component<Props, State> {
       }
     });
     this.map.on('locationerror', console.error);
-    this.map.locate({watch: true, setView: true, enableHighAccuracy: true})
+    this.map.locate({watch: true, enableHighAccuracy: true})
 
     this.map.on('click', (e : any) => {
       this.setState({last: {latlng: e.latlng, accuracy: 2}, newItem: true})
@@ -181,27 +182,8 @@ export default class App extends Component<Props, State> {
       this.setState({newItem: true})
     }).addTo(this.map);
 
-
-    L.easyButton({
-      states: [{
-        stateName: 'disable-locate',
-        icon:      'fas fa-crosshairs',
-        title:     'Disable location',
-        onClick: btn => {
-          this.map!.stopLocate()
-          if (m) {m.remove();m = undefined;}
-          if (c) {c.remove();c = undefined;}
-          btn.state('enable-locate');
-        }
-      }, {
-        stateName: 'enable-locate',
-        icon:      'fas fa-crosshairs icon-off',
-        title:     'Enable location',
-        onClick: btn => {
-          this.map!.locate({watch: true, setView: true, enableHighAccuracy: true})
-          btn.state('disable-locate');
-        }
-      }]
+    L.easyButton('fas fa-crosshairs', () => {
+      m && this.map!.setView(m.getLatLng(), 42)
     }).addTo(this.map);
   }
 
