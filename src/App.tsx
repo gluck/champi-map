@@ -161,7 +161,7 @@ export default class App extends Component<Props, State> {
       } else {
         m.setLatLng(last.latlng)
       }
-      m.bindPopup(radius + " <b>meters</b>").openPopup()
+      m.bindPopup(Math.round(radius) + " <b>meters</b>" ,{ autoPan: false }).openPopup()
       if (c === undefined) {
         c = L.circle(last.latlng, radius).addTo(this.map!)
       } else {
