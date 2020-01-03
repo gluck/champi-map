@@ -35,6 +35,7 @@ interface State {
     accuracy: number;
   },
   newItem: boolean;
+  allowManual: boolean;
   editItem: Item & {id: string} | undefined;
   userid: string | undefined;
 }
@@ -53,6 +54,7 @@ export default class App extends Component<Props, State> {
         },
         accuracy: 5
       },
+      allowManual: false,
       hasLocation: false,
       newItem: false,
       editItem: undefined,
@@ -175,11 +177,33 @@ export default class App extends Component<Props, State> {
     this.map.locate({watch: true, enableHighAccuracy: true})
 
     this.map.on('click', (e : any) => {
-      this.setState({last: {latlng: e.latlng, accuracy: 2}, newItem: true})
+      if (this.state.allowManual) {
+        this.setState({last: {latlng: e.latlng, accuracy: 2}, newItem: true})
+      }
     })
 
     L.easyButton('fas fa-user', () => {
       this.setState({login: true})
+    }).addTo(this.map);
+
+    L.easyButton({
+      states: [{
+        stateName: 'enable-manual-add',
+        icon:      'fas fa-hand-pointer icon-off',
+        title:     'Enable manual add',
+        onClick: btn => {
+          this.setState({allowManual: true})
+          btn.state('disable-manual-add');
+        }
+      },{
+        stateName: 'disable-manual-add',
+        icon:      'fas fa-hand-pointer',
+        title:     'Disable manual add',
+        onClick: btn => {
+          this.setState({allowManual: false})
+          btn.state('enable-manual-add');
+        }
+      }]
     }).addTo(this.map);
 
     L.easyButton('fas fa-plus', () => {
