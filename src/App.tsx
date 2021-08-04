@@ -80,7 +80,7 @@ export default class App extends Component<Props, State> {
                 <div className="fas fa-times tool-icon" onclick=${() => items.doc(change.doc.id).delete()}/>
               </div>`
               this.mapItems.set(change.doc.id, {
-                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(popup),
+                marker: L.marker({lat: latlng.latitude, lng: latlng.longitude}, {icon}).addTo(this.map!).bindPopup(popup).on('popupopen', () => this.openPopupCount++).on('popupclose', () => this.openPopupCount--),
                 circle: L.circle({lat: latlng.latitude, lng: latlng.longitude}, accuracy/2).addTo(this.map!)
               })
             }
@@ -103,6 +103,7 @@ export default class App extends Component<Props, State> {
   mapItems = new Map<string, { marker: L.Marker, circle: L.Circle}>()
   mapRef = createRef<HTMLDivElement>()
   map: L.Map | undefined
+  openPopupCount = 0
 
   componentDidMount() {
 
@@ -179,7 +180,9 @@ export default class App extends Component<Props, State> {
       } else {
         m.setLatLng(last.latlng)
       }
-      m.bindPopup(Math.round(radius) + " <b>meters</b>" ,{ autoPan: false }).openPopup()
+      m.bindPopup(Math.round(radius) + " <b>meters</b>" ,{ autoPan: false });
+      if (this.openPopupCount === 0)
+        m.openPopup()
       if (c === undefined) {
         c = L.circle(last.latlng, radius).addTo(this.map!)
       } else {
