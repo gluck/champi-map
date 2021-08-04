@@ -118,33 +118,47 @@ export default class App extends Component<Props, State> {
       maxZoom: 21,
       subdomains:['mt0','mt1','mt2','mt3']
     });
-    let GeoportailFrance_orthos = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+    const GEO_PATTERN = 'https://wxs.ign.fr/{apikey}/geoportail/wmts?layer={layer}&style={style}&tilematrixset=PM&Service=WMTS&Request=GetTile&Version=1.0.0&Format={format}&TileMatrix={z}&TileCol={x}&TileRow={y}';
+    let GeoportailFrance_orthos = L.tileLayer(GEO_PATTERN, {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
       maxZoom: 21,
       maxNativeZoom: 19,
       apikey: 'choisirgeoportail',
       format: 'image/jpeg',
-      style: 'normal'
+      style: 'normal',
+      layer: 'ORTHOIMAGERY.ORTHOPHOTOS',
     } as any);
-    let GeoportailFrance_parcels = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=CADASTRALPARCELS.PARCELS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
-      bounds: [[-75, -180], [81, 180]],
-      minZoom: 2,
-      maxZoom: 21,
-      maxNativeZoom: 20,
-      apikey: 'choisirgeoportail',
-      format: 'image/png',
-      style: 'bdparcellaire'
-    } as any);
-    let GeoportailFrance_ignMaps = L.tileLayer('https://wxs.ign.fr/{apikey}/geoportail/wmts?REQUEST=GetTile&SERVICE=WMTS&VERSION=1.0.0&STYLE={style}&TILEMATRIXSET=PM&FORMAT={format}&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+    let GeoportailFrance_1950 = L.tileLayer(GEO_PATTERN, {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
       maxZoom: 21,
       maxNativeZoom: 18,
+      apikey: 'an7nvfzojv5wa96dsga5nk8w',
+      format: 'image/png',
+      style: 'BDORTHOHISTORIQUE',
+      layer: 'ORTHOIMAGERY.ORTHOPHOTOS.1950-1965',
+    } as any);
+    let GeoportailFrance_parcels = L.tileLayer(GEO_PATTERN, {
+      bounds: [[-75, -180], [81, 180]],
+      minZoom: 2,
+      maxZoom: 21,
+      maxNativeZoom: 19,
       apikey: 'choisirgeoportail',
-      format: 'image/jpeg',
+      format: 'image/png',
+      style: 'PCI vecteur',
+      layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS'
+    } as any);
+    let GeoportailFrance_ignMaps = L.tileLayer(GEO_PATTERN, {
+      bounds: [[-75, -180], [81, 180]],
+      minZoom: 2,
+      maxZoom: 21,
+      maxNativeZoom: 19,
+      apikey: 'choisirgeoportail',
+      format: 'image/png',
       style: 'normal',
-      opacity: 0.5
+      layer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+      opacity: 0.4
     } as any);
 
     this.map = new L.Map(this.mapRef.current as HTMLElement, {
@@ -152,13 +166,13 @@ export default class App extends Component<Props, State> {
       attributionControl: false
     })
 
-    L.control.layers({googleHybrid, googleSat, googleMap, GeoportailFrance_orthos}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
+    L.control.layers({googleHybrid, googleSat, googleMap, GeoportailFrance_orthos, GeoportailFrance_1950}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
 
     let m : L.Marker | undefined,c : L.Circle | undefined
     this.map.on('locationfound', ( e : L.LeafletEvent) => {
       let last = e as L.LocationEvent
       this.setState({last})
-      var radius = last.accuracy / 2;
+      var radius = last.accuracy;
       if (m === undefined) {
         m = L.marker(last.latlng, {icon}).addTo(this.map!)
         this.map!.setView(last.latlng, 42)
