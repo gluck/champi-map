@@ -72,6 +72,8 @@ export default class FormDialog extends React.Component<Props, State> {
                     <MenuItem value='trompette'>Trompette</MenuItem>
                     <MenuItem value='girolle'>Girolle</MenuItem>
                     <MenuItem value='pied-de-mouton'>Pied de mouton</MenuItem>
+                    <MenuItem value='morille'>Morille</MenuItem>
+                    <MenuItem value='autre'>Autre</MenuItem>
               </Select>
   
               <TextField

@@ -140,6 +140,16 @@ export default class App extends Component<Props, State> {
       style: 'BDORTHOHISTORIQUE',
       layer: 'ORTHOIMAGERY.ORTHOPHOTOS.1950-1965',
     } as any);
+    let GeoportailFrance_ignClassic = L.tileLayer(GEO_PATTERN, {
+      bounds: [[-75, -180], [81, 180]],
+      minZoom: 2,
+      maxZoom: 21,
+      maxNativeZoom: 16,
+      apikey: 'an7nvfzojv5wa96dsga5nk8w',
+      format: 'image/jpeg',
+      style: 'normal',
+      layer: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
+    } as any);
     let GeoportailFrance_parcels = L.tileLayer(GEO_PATTERN, {
       bounds: [[-75, -180], [81, 180]],
       minZoom: 2,
@@ -167,7 +177,7 @@ export default class App extends Component<Props, State> {
       attributionControl: false
     })
 
-    L.control.layers({googleHybrid, googleSat, googleMap, GeoportailFrance_orthos, GeoportailFrance_1950}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
+    L.control.layers({googleHybrid, googleSat, googleMap, GeoportailFrance_orthos, GeoportailFrance_1950, GeoportailFrance_ignClassic}, {GeoportailFrance_ignMaps, GeoportailFrance_parcels}).addTo(this.map);
 
     let m : L.Marker | undefined,c : L.Circle | undefined
     this.map.on('locationfound', ( e : L.LeafletEvent) => {
